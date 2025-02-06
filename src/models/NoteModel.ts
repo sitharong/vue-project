@@ -1,7 +1,9 @@
-export interface NoteModel {
-  id: number
-  title: string
-  content?: string
-  created_at?: string
-  updated_at?: string
+export class NoteModel {
+  constructor(
+    public id = 0,
+    public title = '',
+    public content = '',
+    public created_at = '',
+    public updated_at = '',
+  ) {}
 }

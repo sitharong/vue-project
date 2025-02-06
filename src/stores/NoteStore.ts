@@ -1,13 +1,17 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { NoteModel } from '@/models/NoteModel'
-import { noteService } from '@/services/NoteService'
+import { NoteModel } from '@/models/NoteModel'
 
-export const noteStore = defineStore('noteStore', () => {
-  const selectedNote = ref({} as NoteModel)
-  const setSelectedNote = async (id: number) => {
-    selectedNote.value = (await noteService.getNote(id)) || {}
+export const selectedNoteStore = defineStore('selectingNoteStore', () => {
+  const selectedNote = ref(new NoteModel())
+  const resetValue = (note?: NoteModel) => {
+    selectedNote.value = note || new NoteModel()
   }
+  return { selectedNote, resetValue }
+})
 
-  return { selectedNote, setSelectedNote }
+export const listNoteStore = defineStore('listNoteStore', () => {
+  const noteList = ref<NoteModel[]>([])
+
+  return { noteList }
 })
