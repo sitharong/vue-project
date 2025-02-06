@@ -5,8 +5,7 @@
       <!-- read mode -->
       <div v-if="viewMode">
         <button class="font-medium dark:text-blue-500 hover:underline pl-10" @click="editNoteClick()"
-          :class="noteData.id === 0 ? 'text-gray-600 cursor-not-allowed' : 'text-blue-600'"
-          :disabled="noteData.id === 0">
+          :class="!noteData.id ? 'text-gray-600 cursor-not-allowed' : 'text-blue-600'" :disabled="!noteData.id">
           Edit</button>
         <button class="font-medium text-blue-600 dark:text-blue-500 hover:underline pl-5" @click="newNoteClick()">
           New</button>
@@ -74,15 +73,21 @@ selectedNoteStore().$subscribe(
   })
 
 const editNoteClick = () => {
+  console.log('editNoteClick');
+
   setViewMode(false);
 }
 
 const newNoteClick = () => {
+  console.log('newNoteClick');
+
   setNoteDate(new NoteModel());
   editNoteClick();
 }
 
 const saveNoteClick = async () => {
+  console.log('saveNoteClick');
+
   if (!noteData.value.title.trim()) {
     console.log('must input title');
     return;
@@ -96,14 +101,16 @@ const saveNoteClick = async () => {
     newNoteList = await noteService.addNote(noteData.value);
   }
   // refresh note list
-  listNoteStore().noteList = newNoteList;
+  listNoteStore().resetListValue(newNoteList);
   // clear the input
   cancelClick();
 }
 
 const cancelClick = () => {
+  console.log('cancelClick');
+
   setViewMode(true);
-  selectedNoteStore().resetValue()
+  selectedNoteStore().resetNoteValue()
 }
 
 </script>

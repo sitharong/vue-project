@@ -4,14 +4,16 @@ import { NoteModel } from '@/models/NoteModel'
 
 export const selectedNoteStore = defineStore('selectingNoteStore', () => {
   const selectedNote = ref(new NoteModel())
-  const resetValue = (note?: NoteModel) => {
+  const resetNoteValue = (note?: NoteModel) => {
     selectedNote.value = note || new NoteModel()
   }
-  return { selectedNote, resetValue }
+  return { selectedNote, resetNoteValue }
 })
 
 export const listNoteStore = defineStore('listNoteStore', () => {
   const noteList = ref<NoteModel[]>([])
-
-  return { noteList }
+  const resetListValue = (list?: NoteModel[]) => {
+    noteList.value = list || []
+  }
+  return { noteList, resetListValue }
 })
