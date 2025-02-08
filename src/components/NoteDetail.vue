@@ -57,7 +57,7 @@ import { ref } from 'vue';
 
 // data binding with ui
 const noteData = ref(new NoteModel());
-const setNoteDate = (note: NoteModel) => {
+const setNoteData = (note: NoteModel) => {
   noteData.value = note;
 }
 // controls view/edit mode
@@ -67,27 +67,26 @@ const setViewMode = (viewing: boolean) => {
 }
 // listening to note list click
 selectedNoteStore().$subscribe(
-  (_, state) => {
+  () => {
+    console.log('selectedNoteStore$subscribe');
     setViewMode(true);
-    setNoteDate(state.selectedNote);
+    // non reactive
+    setNoteData(selectedNoteStore().cloneSelectedNote());
   })
 
 const editNoteClick = () => {
   console.log('editNoteClick');
-
   setViewMode(false);
 }
 
 const newNoteClick = () => {
   console.log('newNoteClick');
-
-  setNoteDate(new NoteModel());
+  setNoteData(new NoteModel());
   editNoteClick();
 }
 
 const saveNoteClick = async () => {
   console.log('saveNoteClick');
-
   if (!noteData.value.title.trim()) {
     console.log('must input title');
     return;
@@ -108,7 +107,6 @@ const saveNoteClick = async () => {
 
 const cancelClick = () => {
   console.log('cancelClick');
-
   setViewMode(true);
   selectedNoteStore().resetNoteValue()
 }

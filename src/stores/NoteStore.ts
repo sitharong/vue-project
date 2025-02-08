@@ -7,7 +7,12 @@ export const selectedNoteStore = defineStore('selectingNoteStore', () => {
   const resetNoteValue = (note?: NoteModel) => {
     selectedNote.value = note || new NoteModel()
   }
-  return { selectedNote, resetNoteValue }
+  /** reactive */
+  const getSelectedNote = () => selectedNote.value
+  /** non reactive */
+  const cloneSelectedNote = () => ({ ...selectedNote.value })
+
+  return { resetNoteValue, getSelectedNote, cloneSelectedNote, selectedNote }
 })
 
 export const listNoteStore = defineStore('listNoteStore', () => {
@@ -15,5 +20,10 @@ export const listNoteStore = defineStore('listNoteStore', () => {
   const resetListValue = (list?: NoteModel[]) => {
     noteList.value = list || []
   }
-  return { noteList, resetListValue }
+  /** reactive */
+  const getNoteList = () => noteList.value
+  /** non reactive */
+  const cloneNoteList = () => [...noteList.value]
+
+  return { noteList, resetListValue, getNoteList, cloneNoteList }
 })

@@ -15,8 +15,8 @@
       <table class="w-50 text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-6 py-3">Note Title</th>
-            <th scope="col" class="px-6 py-3">Creation Date</th>
+            <th scope="col" class="px-6 py-3" @click="sortListByTitleClick()">Note Title</th>
+            <th scope="col" class="px-6 py-3" @click="sortListByDateClick()">Creation Date</th>
             <th scope="col" class="px-6 py-3">Action</th>
           </tr>
         </thead>
@@ -49,23 +49,32 @@ import type { NoteModel } from '@/models/NoteModel';
 import { noteService } from '@/services/NoteService'
 import { onMounted, ref } from 'vue'
 import { listNoteStore, selectedNoteStore } from '@/stores/NoteStore';
+import { noteHelper } from '@/helpers/NoteHelper';
 
 // title search input binding
 const searchTitle = ref('');
 
+// sort binding
+const sortingByTitle = ref<boolean>()
+const sortingByDate = ref<boolean>()
+const sortAsc = ref<boolean>()
+
 // note list binding
 const noteList = ref<NoteModel[]>([]);
-// note list filter
+// note list filter, sort impl
 const setList = () => {
-  const s = searchTitle.value.trim();
-  if (s) {
-    noteList.value = listNoteStore().noteList.filter(note => note.title.includes(s))
+  const list = noteHelper.filterNoteListByTitle(listNoteStore().cloneNoteList(), searchTitle.value)
+  if (sortingByTitle.value) {
+    noteList.value = noteHelper.sortNoteListByTitle(list, sortAsc.value)
+  } else if (sortingByDate.value) {
+    noteList.value = noteHelper.sortNoteListByCreatedAtDate(list, sortAsc.value)
   } else {
-    noteList.value = listNoteStore().noteList;
+    noteList.value = list;
   }
+  console.log('setList', sortAsc.value);
 }
 
-// listening to list change
+// listening to global list change
 listNoteStore().$subscribe(setList)
 
 // request list on init
@@ -74,13 +83,49 @@ onMounted(async () => {
   listNoteStore().resetListValue(list);
 })
 
+// note click impl
 const noteClick = async (id: number) => {
+  console.log('noteClick');
   const note = await noteService.getNote(id);
   selectedNoteStore().resetNoteValue(note);
 }
 
+// note delete impl
 const noteDeleteClick = async (id: number) => {
+  console.log('noteDeleteClick');
   const newList = await noteService.deleteNote(id)
   listNoteStore().resetListValue(newList);
 }
+
+// sort click impl
+const sortListByTitleClick = () => {
+  if (sortingByTitle.value) {
+    noteList.value = noteList.value.reverse();
+    sortAsc.value = !sortAsc.value;
+  } else {
+    noteList.value = noteHelper.sortNoteListByTitle(noteList.value);
+    sortingByTitle.value = true
+    sortAsc.value = true
+  }
+  if (sortingByDate.value) {
+    sortingByDate.value = false;
+  }
+  console.log('sortListByTitleClick', sortAsc.value);
+}
+
+const sortListByDateClick = () => {
+  if (sortingByDate.value) {
+    noteList.value = noteList.value.reverse();
+    sortAsc.value = !sortAsc.value;
+  } else {
+    noteList.value = noteHelper.sortNoteListByCreatedAtDate(noteList.value);
+    sortingByDate.value = true
+    sortAsc.value = true
+  }
+  if (sortingByTitle.value) {
+    sortingByTitle.value = false;
+  }
+  console.log('sortListByDateClick', sortAsc.value);
+}
+
 </script>
