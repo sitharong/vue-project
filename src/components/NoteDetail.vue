@@ -50,15 +50,16 @@
 <style lang="scss" scoped></style>
 
 <script setup lang="ts">
+import { noteHelper } from '@/helpers/NoteHelper';
 import { NoteModel } from '@/models/NoteModel';
 import { noteService } from '@/services/NoteService';
 import { listNoteStore, selectedNoteStore } from '@/stores/NoteStore';
 import { ref } from 'vue';
 
-// data binding with ui
+// note data binding with ui form
 const noteData = ref(new NoteModel());
-const setNoteData = (note: NoteModel) => {
-  noteData.value = note;
+const setNoteData = (note?: NoteModel) => {
+  noteData.value = note || new NoteModel();
 }
 // controls view/edit mode
 const viewMode = ref(true);
@@ -66,23 +67,34 @@ const setViewMode = (viewing: boolean) => {
   viewMode.value = viewing;
 }
 // listening to note list click
-selectedNoteStore().$subscribe(
-  () => {
-    console.log('selectedNoteStore$subscribe');
-    setViewMode(true);
-    // non reactive
-    setNoteData(selectedNoteStore().cloneSelectedNote());
-  })
+selectedNoteStore().$subscribe(async (_, state) => {
+  console.log('selectedNoteStore$subscribe');
+  setViewMode(true);
+  const selectedNote = noteHelper.findNoteById(listNoteStore().getNoteList(), state.selectedNoteId)
+  if (!selectedNote) return;
+  // non reactive
+  setNoteData({ ...selectedNote });
+  if (!selectedNote.hasFullDetail) {
+    const newNote = await noteService.getNote(selectedNote.id);
+    // refresh ui form with new data
+    setNoteData(newNote);
+    // stores new data
+    Object.assign(selectedNote, newNote)
+  }
+})
 
+// cache selected note data
+let cacheNoteData: NoteModel;
 const editNoteClick = () => {
   console.log('editNoteClick');
   setViewMode(false);
+  cacheNoteData = { ...noteData.value };
 }
 
 const newNoteClick = () => {
   console.log('newNoteClick');
-  setNoteData(new NoteModel());
   editNoteClick();
+  setNoteData();
 }
 
 const saveNoteClick = async () => {
@@ -98,17 +110,17 @@ const saveNoteClick = async () => {
   } else {
     // add new note
     newNoteList = await noteService.addNote(noteData.value);
+    // auto select new added note
+    // const newNoteId = noteHelper.sortNoteListByCreatedAtDate(newNoteList).pop()?.id
   }
   // refresh note list
   listNoteStore().resetListValue(newNoteList);
-  // clear the input
-  cancelClick();
 }
 
 const cancelClick = () => {
   console.log('cancelClick');
   setViewMode(true);
-  selectedNoteStore().resetNoteValue()
+  noteData.value = cacheNoteData;
 }
 
 </script>

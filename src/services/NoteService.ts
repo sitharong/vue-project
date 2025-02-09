@@ -3,7 +3,7 @@ import axios from 'axios'
 
 class NoteService {
   //set in properties file
-  private readonly endpoint = 'http://localhost:5123/api/note'
+  private readonly endpoint = '//localhost:5123/api/note'
 
   async getNotes() {
     const res = await axios.get<NoteModel[]>(`${this.endpoint}/list`)
@@ -12,7 +12,11 @@ class NoteService {
 
   async getNote(id: number) {
     const res = await axios.get<NoteModel>(`${this.endpoint}/${id}`)
-    return res?.data
+    const note = res.data
+    if (note?.id) {
+      note.hasFullDetail = true
+    }
+    return note
   }
 
   async addNote(data: NoteModel) {

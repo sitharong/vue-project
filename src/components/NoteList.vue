@@ -7,7 +7,7 @@
           Title</label>
         <input type="text" id="small-input"
           class="block w-full p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          v-model="searchTitle" v-on:keyup="setList()" />
+          v-model="searchTitle" v-on:keyup="setNoteList()" />
       </div>
     </div>
 
@@ -21,9 +21,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr
-            class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200"
-            v-for="note in noteList" :key="note.id">
+          <tr class="odd:dark:bg-gray-900 even:dark:bg-gray-800 border-b dark:border-gray-700 border-gray-200"
+            v-for="note in noteList" :key="note.id"
+            :class="note.id === selectedNoteStore().selectedNoteId ? 'bg-blue-100' : 'odd:bg-white even:bg-gray-50'">
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
               @click="noteClick(note.id)">
               {{ note.title }}
@@ -59,11 +59,13 @@ const sortingByTitle = ref<boolean>()
 const sortingByDate = ref<boolean>()
 const sortAsc = ref<boolean>()
 
-// note list binding
+// stores all notes
+let allNoteList = [] as NoteModel[];
+// filtered notes
 const noteList = ref<NoteModel[]>([]);
 // note list filter, sort impl
-const setList = () => {
-  const list = noteHelper.filterNoteListByTitle(listNoteStore().cloneNoteList(), searchTitle.value)
+const setNoteList = () => {
+  const list = noteHelper.filterNoteListByTitle(allNoteList, searchTitle.value)
   if (sortingByTitle.value) {
     noteList.value = noteHelper.sortNoteListByTitle(list, sortAsc.value)
   } else if (sortingByDate.value) {
@@ -73,9 +75,16 @@ const setList = () => {
   }
   console.log('setList', sortAsc.value);
 }
+const setAllNoteList = (list: NoteModel[]) => {
+  allNoteList = list || []
+  setNoteList();
+}
 
 // listening to global list change
-listNoteStore().$subscribe(setList)
+listNoteStore().$subscribe(() => {
+  console.log('listNoteStore$subscribe');
+  setAllNoteList(listNoteStore().cloneNoteList());
+})
 
 // request list on init
 onMounted(async () => {
@@ -84,15 +93,14 @@ onMounted(async () => {
 })
 
 // note click impl
-const noteClick = async (id: number) => {
-  console.log('noteClick');
-  const note = await noteService.getNote(id);
-  selectedNoteStore().resetNoteValue(note);
+const noteClick = (id: number) => {
+  console.log('noteClick', id);
+  selectedNoteStore().resetNoteValue(id);
 }
 
 // note delete impl
 const noteDeleteClick = async (id: number) => {
-  console.log('noteDeleteClick');
+  console.log('noteDeleteClick', id);
   const newList = await noteService.deleteNote(id)
   listNoteStore().resetListValue(newList);
 }

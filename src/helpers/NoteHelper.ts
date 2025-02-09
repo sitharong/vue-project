@@ -25,6 +25,16 @@ class NoteHelper {
     }
     return list
   }
+
+  /** find note by id */
+  findNoteById(list: NoteModel[], id: number) {
+    return list.find((n) => n.id === id)
+  }
+
+  /** get new list with updated data */
+  replaceNoteInListById(list: NoteModel[], note: NoteModel) {
+    return list.map((n) => (n.id === note.id ? note : n))
+  }
 }
 
 export const noteHelper = new NoteHelper()

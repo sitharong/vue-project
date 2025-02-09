@@ -5,5 +5,6 @@ export class NoteModel {
     public content = '',
     public created_at = '',
     public updated_at = '',
+    public hasFullDetail = false,
   ) {}
 }
