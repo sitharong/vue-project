@@ -63,12 +63,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-// const user = ref(new UserModel());
-const user = ref<UserModel>({
-  name: 'admin',
-  email: 'admin@mail.com',
-  password: 'admin'
-});
+const user = ref(new UserModel());
 const showPassword = ref(false)
 
 const signInClick = async () => {
