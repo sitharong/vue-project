@@ -19,7 +19,7 @@ export const listNoteStore = defineStore('listNoteStore', () => {
   /** reactive */
   const getNoteList = () => noteList.value
   /** non reactive */
-  const cloneNoteList = () => [...noteList.value]
+  const cloneNoteList = () => noteList.value.map((n) => ({ ...n }))
 
   return { noteList, resetListValue, getNoteList, cloneNoteList }
 })

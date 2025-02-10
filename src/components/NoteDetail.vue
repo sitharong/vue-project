@@ -44,6 +44,8 @@
         class="block p-2.5 w-full text-sm text-gray-900 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         placeholder="content..." v-model="noteData.content"></textarea>
     </div>
+    <button class="font-medium text-blue-600 dark:text-blue-500 hover:underline pl-5 pt-12" @click="logoutClick()">
+      Logout</button>
   </div>
 </template>
 
@@ -53,8 +55,10 @@
 import { noteHelper } from '@/helpers/NoteHelper';
 import { NoteModel } from '@/models/NoteModel';
 import { noteService } from '@/services/NoteService';
+import { userService } from '@/services/UserService';
 import { listNoteStore, selectedNoteStore } from '@/stores/NoteStore';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 // note data binding with ui form
 const noteData = ref(new NoteModel());
@@ -71,7 +75,10 @@ selectedNoteStore().$subscribe(async (_, state) => {
   console.log('selectedNoteStore$subscribe');
   setViewMode(true);
   const selectedNote = noteHelper.findNoteById(listNoteStore().getNoteList(), state.selectedNoteId)
-  if (!selectedNote) return;
+  if (!selectedNote) {
+    setNoteData();
+    return;
+  };
   // non reactive
   setNoteData({ ...selectedNote });
   if (!selectedNote.hasFullDetail) {
@@ -103,24 +110,36 @@ const saveNoteClick = async () => {
     console.log('must input title');
     return;
   }
+  // setViewMode(true);
   let newNoteList: NoteModel[];
   if (noteData.value.id) {
     // update note
     newNoteList = await noteService.updateNote(noteData.value);
+    // clear old selected data
+    selectedNoteStore().resetNoteValue();
   } else {
     // add new note
     newNoteList = await noteService.addNote(noteData.value);
-    // auto select new added note
-    // const newNoteId = noteHelper.sortNoteListByCreatedAtDate(newNoteList).pop()?.id
+    noteData.value.id = newNoteList[newNoteList.length - 1].id
   }
   // refresh note list
   listNoteStore().resetListValue(newNoteList);
+  // select note and refresh detail
+  selectedNoteStore().resetNoteValue(noteData.value.id);
 }
 
 const cancelClick = () => {
   console.log('cancelClick');
   setViewMode(true);
   noteData.value = cacheNoteData;
+}
+
+const router = useRouter();
+const logoutClick = async () => {
+  const res = await userService.logout();
+  if (res) {
+    router.push('login')
+  }
 }
 
 </script>
