@@ -12,7 +12,7 @@
                 <div class="relative flex items-center">
                   <input name="username" type="text" required
                     class="w-full text-gray-800 text-sm border border-gray-300 px-4 py-3 rounded-md outline-blue-600"
-                    placeholder="Enter user name" v-model="user.email" />
+                    placeholder="Enter email" v-model="user.email" />
                   <svg xmlns="http://www.w3.org/2000/svg" fill="#bbb" stroke="#bbb" class="w-4 h-4 absolute right-4"
                     viewBox="0 0 24 24">
                     <circle cx="10" cy="7" r="6" data-original="#000000"></circle>
